@@ -25,6 +25,7 @@ cmd:option('-crop', false, 'If true, center crop both content and style image be
 cmd:option('-saveExt', 'jpg', 'The extension name of the output image')
 cmd:option('-gpu', 0, 'Zero-indexed ID of the GPU to use; for CPU mode set -gpu = -1')
 cmd:option('-outputDir', 'output', 'Directory to save the output image(s)')
+cmd:option('-outputName', 'fileName', 'Filename to save the output image(s)')
 cmd:option('-saveOriginal', false, 
             'If true, also save the original content and style images in the output directory')
 
@@ -196,7 +197,8 @@ for i=1,numContent do
 
         local output = styleTransfer(contentImg, styleImg)
 
-        local savePath = paths.concat(opt.outputDir, contentName .. '_stylized_' .. styleName .. '.' .. opt.saveExt)
+        --local savePath = paths.concat(opt.outputDir, contentName .. '_stylized_' .. styleName .. '.' .. opt.saveExt)
+        local savePath = paths.concat(opt.outputDir, opt.outputName)
         print('Output image saved at: ' .. savePath)
         image.save(savePath, output)
 

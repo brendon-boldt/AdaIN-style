@@ -21,15 +21,17 @@ extension="${filename##*.}"
 filename="${filename%.*}"
 filename=${filename//[%]/x}
 styledirpath=$2
+absoluteOutputPath=$3
 
 # Create processing and output folder
 mkdir -p videoprocessing/${filename}
 mkdir -p videos/${filename}
 
-echo ""
-read -p "Maximum recommended resolution with a Titan X 12GB: 500,000 pixels \
-  (i.e around 960:540). Please enter a resolution at which the content video should be processed, \
-  in the format w:h (example 640:480), or press enter to use the original resolution $cr > " resolution
+#echo ""
+#read -p "Maximum recommended resolution with a Titan X 12GB: 500,000 pixels \
+  #(i.e around 960:540). Please enter a resolution at which the content video should be processed, \
+  #in the format w:h (example 640:480), or press enter to use the original resolution $cr > " resolution
+resolution="16:16"
 
 # Obtain FPS of input video
 fps=$(ffmpeg -i $1 2>&1 | sed -n "s/.*, \(.*\) fp.*/\1/p")
@@ -50,10 +52,11 @@ do
   stylename=$(basename "${styleimage}")
   stylename="${stylename%.*}"
   stylename=${stylename//[%]/x}
-  th testVid.lua -contentDir videoprocessing/${filename} -style ${styleimage} -outputDir videoprocessing/${filename}-${stylename}
+  th testVid.lua -contentDir videoprocessing/${filename} -style ${styleimage} -outputDir videoprocessing/${filename}-${stylename} -gpu -1 -contentSize 16 -styleSize 16 
 
   # Generate video from output images.
-  $FFMPEG -i videoprocessing/${filename}-${stylename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} videos/${filename}/${filename}-stylized-${stylename}.$extension
+  #$FFMPEG -i videoprocessing/${filename}-${stylename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} videos/${filename}/${filename}-stylized-${stylename}.$extension
+  $FFMPEG -i videoprocessing/${filename}-${stylename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} ${absoluteOutputPath}
 done
 
 # Also synthesize back the original video. 

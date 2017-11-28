@@ -37,7 +37,11 @@ mkdir -p videos/${filename}
 #read -p "Maximum recommended resolution with a Titan X 12GB: 500,000 pixels \
   #(i.e around 960:540). Please enter a resolution at which the content video should be processed, \
   #in the format w:h (example 640:480), or press enter to use the original resolution $cr > " resolution
-resolution="$contentSize:$contentSize"
+height=$contentSize
+width=$(echo "$contentSize * 16/9" | bc)
+resolution="$width:$height"
+echo $resolution
+exit
 
 # Obtain FPS of input video
 fps=$(ffmpeg -i $1 2>&1 | sed -n "s/.*, \(.*\) fp.*/\1/p")

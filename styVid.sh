@@ -20,8 +20,11 @@ filename=$(basename "$1")
 extension="${filename##*.}"
 filename="${filename%.*}"
 filename=${filename//[%]/x}
-styledirpath=$2
+#styledirpath=$2
+styleimage=$2
 absoluteOutputPath=$3
+contentSize=$4
+styleSize=$5
 
 # Create processing and output folder
 mkdir -p videoprocessing/${filename}
@@ -31,7 +34,7 @@ mkdir -p videos/${filename}
 #read -p "Maximum recommended resolution with a Titan X 12GB: 500,000 pixels \
   #(i.e around 960:540). Please enter a resolution at which the content video should be processed, \
   #in the format w:h (example 640:480), or press enter to use the original resolution $cr > " resolution
-resolution="16:16"
+resolution="$contentSize:$contentSize"
 
 # Obtain FPS of input video
 fps=$(ffmpeg -i $1 2>&1 | sed -n "s/.*, \(.*\) fp.*/\1/p")
@@ -47,18 +50,18 @@ fi
 echo ""
 
 # For each style image generate a corresponding video
-for styleimage in "${styledirpath}"/*
-do
+#for styleimage in "${styledirpath}"/*
+#do
   stylename=$(basename "${styleimage}")
   stylename="${stylename%.*}"
   stylename=${stylename//[%]/x}
-  th testVid.lua -contentDir videoprocessing/${filename} -style ${styleimage} -outputDir videoprocessing/${filename}-${stylename} -gpu -1 -contentSize 16 -styleSize 16 
+  th testVid.lua -contentDir videoprocessing/${filename} -style ${styleimage} -outputDir videoprocessing/${filename}-${stylename} -gpu -1 -contentSize ${contentSize} -styleSize ${styleSize} 
 
   # Generate video from output images.
   #$FFMPEG -i videoprocessing/${filename}-${stylename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} videos/${filename}/${filename}-stylized-${stylename}.$extension
-  $FFMPEG -i videoprocessing/${filename}-${stylename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} ${absoluteOutputPath}
-done
+  $FFMPEG -y -i videoprocessing/${filename}-${stylename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} ${absoluteOutputPath}
+#done
 
 # Also synthesize back the original video. 
 # Sometimes there can be a difference of about 1 second
-$FFMPEG -i videoprocessing/${filename}/frame_%04d.ppm -pix_fmt yuv420p -r ${fps} videos/${filename}/${filename}-fix.$extension
+$FFMPEG -y -i videoprocessing/${filename}/frame_%04d.ppm -pix_fmt yuv420p -r ${fps} videos/${filename}/${filename}-fix.$extension

@@ -26,8 +26,11 @@ absoluteOutputPath=$3
 contentSize=$4
 styleSize=$5
 
+inputPrefix="upload-"
+outputPrefix="output-"
+
 # Create processing and output folder
-mkdir -p videoprocessing/${filename}
+mkdir -p videoprocessing/${inputPrefix}${filename}
 mkdir -p videos/${filename}
 
 #echo ""
@@ -41,10 +44,10 @@ fps=$(ffmpeg -i $1 2>&1 | sed -n "s/.*, \(.*\) fp.*/\1/p")
 
 # Save frames of the video as individual image files
 if [ -z $resolution ]; then
-  $FFMPEG -i $1 -r ${fps} videoprocessing/${filename}/frame_%04d.ppm
+  $FFMPEG -i $1 -r ${fps} videoprocessing/${inputPrefix}${filename}/frame_%04d.ppm
   resolution=default
 else
-  $FFMPEG -i $1 -vf scale=$resolution -r ${fps} videoprocessing/${filename}/frame_%04d.ppm
+  $FFMPEG -i $1 -vf scale=$resolution -r ${fps} videoprocessing/${inputPrefix}${filename}/frame_%04d.ppm
 fi
 
 echo ""
@@ -55,13 +58,15 @@ echo ""
   stylename=$(basename "${styleimage}")
   stylename="${stylename%.*}"
   stylename=${stylename//[%]/x}
-  th testVid.lua -contentDir videoprocessing/${filename} -style ${styleimage} -outputDir videoprocessing/${filename}-${stylename} -gpu -1 -contentSize ${contentSize} -styleSize ${styleSize} 
+  th testVid.lua -contentDir videoprocessing/${inputPrefix}${filename} -style ${styleimage} -outputDir videoprocessing/${outputPrefix}${filename} -gpu -1 -contentSize ${contentSize} -styleSize ${styleSize} 
 
   # Generate video from output images.
   #$FFMPEG -i videoprocessing/${filename}-${stylename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} videos/${filename}/${filename}-stylized-${stylename}.$extension
-  $FFMPEG -y -i videoprocessing/${filename}-${stylename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} ${absoluteOutputPath}
+  $FFMPEG -y -i videoprocessing/${outputPrefix}${filename}/frame_%04d_stylized_${stylename}.jpg -pix_fmt yuv420p -r ${fps} ${absoluteOutputPath}
 #done
 
 # Also synthesize back the original video. 
 # Sometimes there can be a difference of about 1 second
-$FFMPEG -y -i videoprocessing/${filename}/frame_%04d.ppm -pix_fmt yuv420p -r ${fps} videos/${filename}/${filename}-fix.$extension
+#$FFMPEG -y -i videoprocessing/${filename}/frame_%04d.ppm -pix_fmt yuv420p -r ${fps} videos/${filename}/${filename}-fix.$extension
+
+  rm -rf videoprocessing/${outputPrefix}${filename} videoprocessing/${inputPrefix}${filename}

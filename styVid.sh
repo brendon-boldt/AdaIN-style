@@ -40,8 +40,6 @@ mkdir -p videos/${filename}
 height=$contentSize
 width=$(echo "$contentSize * 16/9" | bc)
 resolution="$width:$height"
-echo $resolution
-exit
 
 # Obtain FPS of input video
 fps=$(ffmpeg -i $1 2>&1 | sed -n "s/.*, \(.*\) fp.*/\1/p")
